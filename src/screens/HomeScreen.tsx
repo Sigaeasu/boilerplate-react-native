@@ -1,11 +1,44 @@
-import React from 'react';
-import { StyleSheet, View, Text, useColorScheme } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, useColorScheme, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PrimaryButton from '../components/PrimaryButton';
+import productService from '../services/productService';
 
 const HomeScreen = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
+  
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+
+  const handleFetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await productService.fetchProducts(1);
+      setData(response);
+      Alert.alert('Success', 'Products fetched successfully (Simulator)');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await productService.login({ 
+        username: 'user123', 
+        password: 'password123' 
+      });
+      console.log('Login Response:', response);
+      Alert.alert('Success', 'Login successful (Simulator)');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={[
@@ -13,18 +46,30 @@ const HomeScreen = () => {
       { backgroundColor: isDarkMode ? '#121212' : '#F5F5F5', paddingTop: insets.top, paddingBottom: insets.bottom }
     ]}>
       <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
-        Welcome to your React Native Boilerplate
+        API Service Pattern
       </Text>
-      <Text style={[styles.subtitle, { color: isDarkMode ? '#BBBBBB' : '#666666' }]}>
-        This is the HomeScreen in src/screens/HomeScreen.tsx
-      </Text>
-
-      <View style={styles.buttonContainer}>
-        <PrimaryButton
-          title="Get Started"
-          onPress={() => console.log('Button Pressed')}
-        />
-      </View>
+      
+      {loading ? (
+        <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />
+      ) : (
+        <View style={styles.content}>
+          <Text style={[styles.subtitle, { color: isDarkMode ? '#BBBBBB' : '#666666' }]}>
+            {data ? JSON.stringify(data).substring(0, 100) + '...' : 'Data shown here after fetch'}
+          </Text>
+          
+          <View style={styles.buttonContainer}>
+            <PrimaryButton 
+              title="Fetch Products (Service → Utils)" 
+              onPress={handleFetchProducts} 
+            />
+            <View style={{ height: 10 }} />
+            <PrimaryButton 
+              title="Mock Login (Service → Utils)" 
+              onPress={handleLogin} 
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -35,6 +80,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  content: {
+    alignItems: 'center',
+    width: '100%',
   },
   title: {
     fontSize: 24,
