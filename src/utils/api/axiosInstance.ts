@@ -1,13 +1,20 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { API_BASE_URL } from '@env';
+
+if (!API_BASE_URL) {
+  console.error('❌ API_BASE_URL is not defined in your .env file!');
+}
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: 'https://api.example.com', // Change this to your base URL
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
+
+
 
 // Request Interceptor
 axiosInstance.interceptors.request.use(
